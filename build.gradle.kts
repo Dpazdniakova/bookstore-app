@@ -1,11 +1,13 @@
 plugins {
     kotlin("jvm") version "2.0.10"
     id("org.jetbrains.dokka") version "1.9.0"
-    jacoco
+    id("jacoco")
 }
+
 jacoco {
     toolVersion = "0.8.8"
 }
+
 group = "ie.setu"
 version = "1.0-SNAPSHOT"
 
@@ -23,4 +25,3 @@ tasks.test {
 kotlin {
     jvmToolchain(16)
 }
-
