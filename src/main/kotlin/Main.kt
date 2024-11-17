@@ -6,9 +6,9 @@ import ie.setu.models.Author
 import ie.setu.models.Book
 import ie.setu.utils.readNextDate
 import ie.setu.utils.readNextLine
-
+import ie.setu.utils.containsNumbers
 var aId =0
-val bId=0
+var bId=0
 private val API = API()
 fun main() {
     runMenu()
@@ -37,12 +37,11 @@ fun runMenu() {
         val option= mainMenu()
         when (option) {
             1 -> {
-                println("\nYou selected Add a Book")
+               addBook()
 
             }
             2 -> {
                 println("\nYou selected List Books")
-                API.listAllAuthors()
 
             }
             3 -> {
@@ -57,7 +56,7 @@ fun runMenu() {
                 addAuthor()
             }
             6 -> {
-                API.listAllAuthors()
+                println(API.listAllAuthors())
             }
             0  -> exitApp()
             else -> println("Invalid option entered: $option ")
@@ -83,18 +82,38 @@ fun getGenres(): List<String> {
 
         if (genre.equals("done", ignoreCase = true))
             userWantsToContinue = false
-        else if (genre.isNotBlank()) {
+        else if (genre.isNotBlank() && !containsNumbers(genre)) {
             genres.add(genre)
+        }
+        else {
+            println("Genre can't be blank or contain numbers.Please, re-enter")
         }
     }
 
     return genres
 }
+
+
 fun addAuthor () {
-    var authorId = aId
+    val authorId = aId
     aId++
-    var name = readNextLine("Enter Author's name: ")
-    var country= readNextLine("Enter Author's country of origin: ")
+    var name : String
+
+    do {
+        name = readNextLine("Enter Author's name:")
+        if (containsNumbers(name)) {
+            println("Name can't contain numbers. Please, re-enter")
+        }
+    } while (containsNumbers(name) || name.isBlank())
+
+    var country: String
+    do {
+        country = readNextLine("Enter Author's country of origin: ")
+        if (containsNumbers(country) || name.isBlank() ) {
+            println("Country can't contain numbers. Please, re-enter")
+        }
+    } while (containsNumbers(country) || name.isBlank() )
+
     var dateOfBirth = readNextDate()
     var genres= getGenres()
     var booksWritten= ArrayList<Book>()
@@ -110,3 +129,40 @@ fun addAuthor () {
     }
 }
 
+fun addBook () {
+    println("You've chosen to add a book")
+//    var bookId = bId
+//    bId++
+//    var title = readNextLine("Enter book title: ")
+//    var genre = readNextLine("Enter book's genre: ")
+//    var author: Author
+//
+//    do {
+//        var switch = true
+//        println("Sub-Menu:")
+//        println("1. Pick existing author")
+//        println("2. Create new author")
+//        println("0. Exit")
+//        val option= readNextInt("Please, enter your option: ")
+//        when (option) {
+//            1  ->  { println(API.listAllAuthors())
+//               val Id= readNextInt("Please, enter Author's Id: ")
+//             API.addingBookWithExistingAuthor(Id)
+//
+//            }
+//            2  -> addAuthor()
+//            0 -> runMenu()
+//            else -> println("Invalid option entered: $option ")
+//
+//        }
+//
+//
+//
+//    }
+//        while (switch)
+//    var publicationYear
+//    var price
+//    var isbn
+
+
+}
