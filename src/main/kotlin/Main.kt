@@ -147,7 +147,7 @@ fun addBook () {
             1  ->{ val result =addingBookWithExistingAuthor(genre)
                 if (result!=null) {
                     authorForObject=result
-                    val publicationYear = readNextInt("Please, enter publication year: ")
+                    val publicationYear = readValidYear("Please, enter publication year: ")
                     val price = readNextFloat("Please, enter price: ")
                     val isbn = readNextInt("Please, enter a 9-digit ISBN: ")
                     val newBook = Book(bookId, title, authorForObject, genre, publicationYear, price, isbn)
@@ -163,7 +163,7 @@ fun addBook () {
             }
             2  -> {addAuthor()
             authorForObject=API.lastAddedAuthor()
-                val publicationYear = readNextInt("Please, enter publication year: ")
+                val publicationYear = readValidYear("Please, enter publication year: ")
                 val price = readNextFloat("Please, enter price: ")
                 val isbn = readNextInt("Please, enter a 9-digit ISBN: ")
                 val newBook = Book(bookId, title, authorForObject, genre, publicationYear, price, isbn)

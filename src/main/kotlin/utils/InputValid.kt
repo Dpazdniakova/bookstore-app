@@ -79,3 +79,13 @@ fun containsNumbers(input: String): Boolean {
     return false
 }
 
+fun readValidYear(prompt: String , minYear: Int = 1000, maxYear:Int = 2024 ): Int {
+    while (true) {
+        val input = readNextInt(prompt)
+        if (input in minYear..maxYear) {
+            return input
+        } else {
+            println("Invalid year. Please enter a year between $minYear and $maxYear (inclusive).")
+        }
+    }
+}

@@ -16,28 +16,19 @@ class API {
     }
 
     fun listAllAuthors(): String {
-        var listOfAuthors= ""
-         if (authors.isEmpty()) {
-            return "No authors yet"
+        return if (authors.isEmpty()) {
+            "No authors yet"
         } else {
-            for (i in authors.indices) {
-                listOfAuthors+= " ${authors[i]} \n"
-            }
+            authors.joinToString(separator = "\n") { " $it" }
         }
-        return listOfAuthors
     }
-    fun listAllBooks (): String {
-        var listOfBooks= ""
-        if (books.isEmpty()) {
-            return "No books yet"
+
+    fun listAllBooks(): String {
+        return if (books.isEmpty()) {
+            "No books yet"
         } else {
-            for (i in books.indices) {
-                listOfBooks+= "${books[i]} \n"
-            }
+            books.joinToString(separator = "\n")
         }
-        return listOfBooks
-
-
     }
    fun searchExistingAuthor (Id:Int): Author{
 
