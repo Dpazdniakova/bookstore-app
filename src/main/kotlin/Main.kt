@@ -1,12 +1,10 @@
 
-import ie.setu.utils.readNextInt
 import java.lang.System.exit
 import controllers.API
 import ie.setu.models.Author
 import ie.setu.models.Book
-import ie.setu.utils.readNextDate
-import ie.setu.utils.readNextLine
-import ie.setu.utils.containsNumbers
+import ie.setu.utils.*
+
 var aId =0
 var bId=0
 private val API = API()
@@ -41,7 +39,7 @@ fun runMenu() {
 
             }
             2 -> {
-                println("\nYou selected List Books")
+                println(API.listAllBooks())
 
             }
             3 -> {
@@ -49,8 +47,8 @@ fun runMenu() {
 
             }
             4 -> {
-                println("\nYou selected Delete a Book")
 
+                println("\nYou selected Delete a Book")
             }
             5 -> {
                 addAuthor()
@@ -58,7 +56,8 @@ fun runMenu() {
             6 -> {
                 println(API.listAllAuthors())
             }
-            0  -> exitApp()
+            0  -> {exitApp()
+                println ("Exiting book creation")}
             else -> println("Invalid option entered: $option ")
 
         }
@@ -114,9 +113,9 @@ fun addAuthor () {
         }
     } while (containsNumbers(country) || name.isBlank() )
 
-    var dateOfBirth = readNextDate()
-    var genres= getGenres()
-    var booksWritten= ArrayList<Book>()
+    val dateOfBirth = readNextDate()
+    val genres= getGenres()
+    val booksWritten= ArrayList<Book>()
 
     val isAdded = API.addAuthor(Author(authorId, name, country, dateOfBirth, genres, booksWritten))
 
@@ -130,39 +129,81 @@ fun addAuthor () {
 }
 
 fun addBook () {
-    println("You've chosen to add a book")
-//    var bookId = bId
-//    bId++
-//    var title = readNextLine("Enter book title: ")
-//    var genre = readNextLine("Enter book's genre: ")
-//    var author: Author
-//
-//    do {
-//        var switch = true
-//        println("Sub-Menu:")
-//        println("1. Pick existing author")
-//        println("2. Create new author")
-//        println("0. Exit")
-//        val option= readNextInt("Please, enter your option: ")
-//        when (option) {
-//            1  ->  { println(API.listAllAuthors())
-//               val Id= readNextInt("Please, enter Author's Id: ")
-//             API.addingBookWithExistingAuthor(Id)
-//
-//            }
-//            2  -> addAuthor()
-//            0 -> runMenu()
-//            else -> println("Invalid option entered: $option ")
-//
-//        }
-//
-//
-//
-//    }
-//        while (switch)
-//    var publicationYear
-//    var price
-//    var isbn
+    val bookId = bId
+    bId++
+    val title = readNextLine("Enter book title: ")
+    val genre = readNextLine("Enter book's genre: ")
+    var authorForObject: Author?
 
+    do {
+        var done = false
+        println("Sub-Menu:")
+        println("1. Pick existing author")
+        println("2. Create new author")
+        println("0. Exit")
 
+        val option= readNextInt("Please, enter your option: ")
+        when (option) {
+            1  ->{ val result =addingBookWithExistingAuthor(genre)
+                if (result!=null) {
+                    authorForObject=result
+                    val publicationYear = readNextInt("Please, enter publication year: ")
+                    val price = readNextFloat("Please, enter price: ")
+                    val isbn = readNextInt("Please, enter a 9-digit ISBN: ")
+                    val newBook = Book(bookId, title, authorForObject, genre, publicationYear, price, isbn)
+                    authorForObject.booksWritten.add(newBook)
+                    API.addBook(newBook)
+                    println ("Book successfully added")
+
+                }
+                else  {
+                    println("No valid author was selected. Book creation is cancelled")
+                }
+                    done = true
+            }
+            2  -> {addAuthor()
+            authorForObject=API.lastAddedAuthor()
+                val publicationYear = readNextInt("Please, enter publication year: ")
+                val price = readNextFloat("Please, enter price: ")
+                val isbn = readNextInt("Please, enter a 9-digit ISBN: ")
+                val newBook = Book(bookId, title, authorForObject, genre, publicationYear, price, isbn)
+                authorForObject.booksWritten.add(newBook)
+                API.addBook(newBook)
+                println ("Book successfully added")
+                done=true
+            }
+            0 -> runMenu()
+            else -> println("Invalid option entered: $option ")
+
+        }
+
+    }
+        while (option!=0 && done==false)
+
+ }
+
+fun addingBookWithExistingAuthor (genre: String): Author? {
+    var result: Author? = null
+    println(API.listAllAuthors())
+    val Id = readNextInt("Please, enter Author's Id: ")
+    if (API.validAuthorId(Id)) {
+        val author = API.searchExistingAuthor(Id)
+            if (author.genres.isNotEmpty()) {
+                if (author.genres.any { it.equals(genre, ignoreCase = true) }) {
+                    println("Author found.")
+                    result = author
+                } else {
+                    println("The author you chose does not have the specified genre '$genre'.")
+                }
+            }
+        else {
+            result = author
+
+        }
+    }
+    else {
+        println ("Author ID not valid.")
+    }
+    return result
 }
+
