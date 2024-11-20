@@ -4,7 +4,6 @@ import ie.setu.models.Author
 import ie.setu.models.Book
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Assertions.assertThrows
 import java.time.LocalDate
 
 class APITest {
@@ -22,7 +21,7 @@ class APITest {
             name = "J.K. Rowling",
             country = "UK",
             dateOfBirth = LocalDate.of(1965, 7, 31),
-            genres = listOf("Fantasy", "Drama"),
+            genres = listOf("Fantasy", "Drama").toMutableList(),
             booksWritten = ArrayList()
         )
         author2 = Author(
@@ -30,7 +29,7 @@ class APITest {
             name = "George R.R. Martin",
             country = "USA",
             dateOfBirth = LocalDate.of(1948, 9, 20),
-            genres = listOf("Fantasy", "Drama"),
+            genres = listOf("Fantasy", "Drama").toMutableList(),
             booksWritten = ArrayList()
         )
 
@@ -80,7 +79,7 @@ class APITest {
                 name = "J.R.R. Tolkien",
                 country = "UK",
                 dateOfBirth = LocalDate.of(1892, 1, 3),
-                genres = listOf("Fantasy"),
+                genres = listOf("Fantasy").toMutableList(),
                 booksWritten = ArrayList()
             )
             assertEquals(2, api!!.listAllAuthors().lines().count())
@@ -148,7 +147,7 @@ class APITest {
         @Test
         fun `searchExistingAuthor throws exception when author does not exist`() {
             assertThrows<NoSuchElementException> {
-                api!!.searchExistingAuthor(999)  // 999 is an ID that does not exist
+                api!!.searchExistingAuthor(999)
             }
         }
 
@@ -167,13 +166,72 @@ class APITest {
 
         @Test
         fun `validAuthorId returns true for existing author ID`() {
-            assertTrue(api!!.validAuthorId(1))
-            assertTrue(api!!.validAuthorId(2))
+            assertNotNull(api!!.validAuthorId(1))
+            assertNotNull(api!!.validAuthorId(2))
         }
 
         @Test
         fun `validAuthorId returns false for non-existing author ID`() {
-            assertFalse(api!!.validAuthorId(999))
+            assertNull(api!!.validAuthorId(999))
         }
+    }
+  @Nested
+  inner class DeleteEntities {
+      @Test
+      fun testDeleteBook() {
+          api!!.deleteBook(1)
+          val authorBooks = author1!!.booksWritten
+          assertFalse(authorBooks.any { it.bookId == 1 })
+          val booksList = api!!.listAllBooks()
+          assertFalse(booksList.contains("Harry Potter and the Philosopher's Stone"))
+      }
+      @Test
+      fun testDeleteAuthor() {
+          api!!.deleteAuthor(2)
+          val authorsList = api!!.listAllAuthors()
+          assertFalse(authorsList.contains("George R.R. Martin"))
+          val remainingBooks = api!!.listAllBooks()
+          assertFalse(remainingBooks.contains("A Game of Thrones"))
+      }
+  }
+    @Nested
+    inner class UpdateEntities {
+        @Test
+        fun testUpdateBook() {
+            val updatedPrice = 25.99f
+            val updatedGenre = "Adventure"
+            val updatedPublicationYear = 2000
+            val updatedIsbn = 111222333
+
+            val bookToUpdate = api!!.validBookId(1)
+            assertNotNull(bookToUpdate)
+
+            bookToUpdate!!.price = updatedPrice
+            bookToUpdate.genre = updatedGenre
+            bookToUpdate.publicationYear = updatedPublicationYear
+            bookToUpdate.isbn = updatedIsbn
+
+            val updatedBook = api!!.validBookId(1)
+            assertEquals(updatedPrice, updatedBook!!.price)
+            assertEquals(updatedGenre, updatedBook.genre)
+            assertEquals(updatedPublicationYear, updatedBook.publicationYear)
+            assertEquals(updatedIsbn, updatedBook.isbn)
+        }
+        @Test
+        fun testUpdateAuthor() {
+            val updatedCountry = "Canada"
+            val newGenre = "Mystery"
+
+            val authorToUpdate = api!!.validAuthorId(1)
+            assertNotNull(authorToUpdate)
+
+            authorToUpdate!!.country = updatedCountry
+            authorToUpdate.genres.add(newGenre)
+
+            val updatedAuthor = api!!.validAuthorId(1)
+            assertEquals(updatedCountry, updatedAuthor!!.country)
+            assertTrue(updatedAuthor.genres.contains(newGenre))
+        }
+
     }
 }

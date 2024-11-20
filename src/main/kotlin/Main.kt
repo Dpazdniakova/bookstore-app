@@ -4,6 +4,7 @@ import controllers.API
 import ie.setu.models.Author
 import ie.setu.models.Book
 import ie.setu.utils.*
+import java.time.LocalDateTime
 
 var aId =0
 var bId=0
@@ -24,6 +25,7 @@ fun mainMenu() : Int {
           |   5) Add an Author             |
           |   6) List Authors              |
           |   7) Update an Author          |
+          |   8) Delete an Author          |
           |   0) Exit                      |
            --------------------------------
           """.trimMargin(">"))
@@ -36,25 +38,28 @@ fun runMenu() {
         when (option) {
             1 -> {
                addBook()
-
             }
             2 -> {
                 println(API.listAllBooks())
 
             }
             3 -> {
-                println("\nYou selected Update a Book")
-
+             updateBook()
             }
             4 -> {
-
-                println("\nYou selected Delete a Book")
+                deletingBook ()
             }
             5 -> {
                 addAuthor()
             }
             6 -> {
                 println(API.listAllAuthors())
+            }
+            7 -> {
+                updateAuthor()
+            }
+            8 -> {
+                deletingAuthor()
             }
             0  -> {exitApp()
                 println ("Exiting book creation")}
@@ -71,7 +76,7 @@ fun exitApp(){
     println("Exiting")
     exit(0)
 }
-fun getGenres(): List<String> {
+fun getGenres(): MutableList<String> {
     val genres = mutableListOf<String>()
     var userWantsToContinue = true
 
@@ -186,7 +191,7 @@ fun addingBookWithExistingAuthor (genre: String): Author? {
     var result: Author? = null
     println(API.listAllAuthors())
     val Id = readNextInt("Please, enter Author's Id: ")
-    if (API.validAuthorId(Id)) {
+    if (API.validAuthorId(Id)!= null) {
         val author = API.searchExistingAuthor(Id)
             if (author.genres.isNotEmpty()) {
                 if (author.genres.any { it.equals(genre, ignoreCase = true) }) {
@@ -207,3 +212,123 @@ fun addingBookWithExistingAuthor (genre: String): Author? {
     return result
 }
 
+fun deletingBook () {
+    println(API.listAllBooks())
+    val Id = readNextInt("Please, enter the ID of the book you want to delete: ")
+    val result=API.deleteBook(Id)
+    if ( !result)  {
+        println("Deletion successful.")
+    }
+    else {
+        println("Deletion unsuccessful.")
+    }
+
+}
+
+fun deletingAuthor() {
+    println(API.listAllAuthors())
+    val Id = readNextInt("Please, enter the ID of the author you want to delete: ")
+    val result=API.deleteAuthor(Id)
+    if ( !result)  {
+        println("Deletion successful.")
+    }
+    else {
+        println("Deletion unsuccessful.")
+    }
+}
+
+fun updateBook() {
+    if (!API.listAllBooks().contains("No books", ignoreCase = true)) {
+        println(API.listAllBooks())
+        val idToUpdate = readNextInt("Enter the ID of the book you want to update: ")
+        val bookToUpdate = API.validBookId(idToUpdate)
+
+        if (bookToUpdate != null) {
+            var option: Int
+            do {
+                println("""
+                    What would you like to update?
+                    1. Price
+                    2. Genre
+                    3. Publication Year
+                    4. ISBN
+                    5. Exit
+                """.trimIndent())
+                option = readNextInt("Enter your choice: ")
+
+                when (option) {
+                    1 -> {
+                        val newPrice = readNextFloat("Enter new price: ")
+                        bookToUpdate.price = newPrice
+                        println("Book price updated successfully.")
+                    }
+                    2 -> {
+                        val newGenre = readNextLine("Enter new genre: ")
+                        bookToUpdate.genre = newGenre
+                        println("Book genre updated successfully.")
+                    }
+                    3 -> {
+                        val newPublicationYear = readValidYear("Enter new publication year: ")
+                        bookToUpdate.publicationYear = newPublicationYear
+                        println("Book publication year updated successfully.")
+                    }
+                    4 -> {
+                        val newIsbn = readNextInt("Enter new ISBN (9 digits): ")
+                        bookToUpdate.isbn = newIsbn
+                        println("Book ISBN updated successfully.")
+                    }
+                    5 -> println("Exiting update menu.")
+                    else -> println("Invalid option. Please try again.")
+                }
+            } while (option != 5)
+        } else {
+            println("There are no books with this ID.")
+        }
+    }
+}
+
+fun updateAuthor() {
+    if (!API.listAllAuthors().contains("No authors", ignoreCase = true)) {
+        println(API.listAllAuthors())
+        val idToUpdate = readNextInt("Enter the ID of the author you want to update: ")
+        val authorToUpdate = API.validAuthorId(idToUpdate)
+
+        if (authorToUpdate != null) {
+            var option: Int
+            do {
+                println("""
+                    What would you like to update?
+                    1. Add New Genre
+                    2. Change Country of Origin
+                    3. Exit
+                """.trimIndent())
+                option = readNextInt("Enter your choice: ")
+
+                when (option) {
+                    1 -> {
+                        val newGenre = readNextLine("Enter new genre to add: ")
+                        if (newGenre.isNotBlank()&& !containsNumbers(newGenre)) {
+                            authorToUpdate.genres.add(newGenre)
+                            println("Genre added successfully.")
+                        } else {
+                            println("Invalid genre. Please try again.")
+                        }
+                    }
+                    2 -> {
+                        val newCountry = readNextLine("Enter new country of origin: ")
+                        if (newCountry.isNotBlank()&& !containsNumbers(newCountry)) {
+                            authorToUpdate.country = newCountry
+                            println("Country of origin updated successfully.")
+                        } else {
+                            println("Invalid input. Please try again.")
+                        }
+                    }
+                    3 -> println("Exiting update menu.")
+                    else -> println("Invalid option. Please try again.")
+                }
+            } while (option != 3)
+        } else {
+            println("There are no authors with this ID.")
+        }
+    }
+}

@@ -2,7 +2,7 @@ package controllers
 
 import ie.setu.models.Author
 import ie.setu.models.Book
-import ie.setu.utils.readNextInt
+import java.time.LocalDateTime
 
 class API {
     private var authors = ArrayList<Author>()
@@ -11,7 +11,8 @@ class API {
     fun addAuthor(author: Author): Boolean {
         return authors.add(author)
     }
-    fun addBook(book:Book): Boolean {
+
+    fun addBook(book: Book): Boolean {
         return books.add(book)
     }
 
@@ -19,7 +20,7 @@ class API {
         return if (authors.isEmpty()) {
             "No authors yet"
         } else {
-            authors.joinToString(separator = "\n") { " $it" }
+          authorList(authors)
         }
     }
 
@@ -27,19 +28,75 @@ class API {
         return if (books.isEmpty()) {
             "No books yet"
         } else {
-            books.joinToString(separator = "\n")
+            bookList(books)
         }
     }
-   fun searchExistingAuthor (Id:Int): Author{
 
-           val author = authors.filter { it.authorId == Id }.first()
-       return author
-   }
- fun lastAddedAuthor (): Author {
-     val lastAuthor = authors.last()
-     return lastAuthor
- }
-    val validAuthorId: (Int) -> Boolean = { Id ->
-        authors.map { it.authorId }.contains(Id)
+    fun searchExistingAuthor(Id: Int): Author {
+
+        val author = authors.first { it.authorId == Id }
+        return author
     }
+
+    fun lastAddedAuthor(): Author {
+        val lastAuthor = authors.last()
+        return lastAuthor
+    }
+
+    val validAuthorId: (Int) -> Author? = { Id ->
+        authors.find { it.authorId == Id}
+    }
+    val validBookId: (Int) -> Book? = { Id ->
+         books.find { it.bookId == Id}
+    }
+    fun deleteBook(id: Int): Boolean {
+        val index = books.indexOfFirst { it.bookId == id }
+        if (index != -1) {
+            val bookToRemove = books[index]
+            bookToRemove.author?.booksWritten?.removeIf { it.bookId == id }
+            books.removeAt(index)
+            return true
+        }
+        return false
+    }
+
+    fun deleteAuthor(id: Int) : Boolean{
+        val authorIndex = authors.indexOfFirst {it.authorId ==id}
+        if (authorIndex != -1) {
+            val authorToRemove =authors[authorIndex]
+            authorToRemove.booksWritten.reversed().forEach { book ->
+                books.removeIf { it.title == book.title }
+            }
+            authors.removeAt(authorIndex)
+            return true
+        }
+        return false
+    }
+    fun searchBookByTitle(title: String): String {
+        val books = bookList(
+            books.filter { note -> note.title.contains(title, ignoreCase = true) })
+
+        return if (books.isEmpty()) {
+            "No book found with this title."
+        } else {
+            books
+        }
+    }
+    fun searchAuthorByName(name: String): String {
+        val authors = authorList(
+            authors.filter { note -> note.name.contains(name, ignoreCase = true) })
+
+        return if (authors.isEmpty()) {
+            "No book found with this title."
+        } else {
+            authors
+        }
+    }
+
+    fun bookList(list: List<Book>): String =
+        list.joinToString(separator = "\n") { book -> book.toString() }
+
+    fun authorList(list: List<Author>): String =
+        list.joinToString(separator = "\n") { author -> author.toString() }
+
 }
