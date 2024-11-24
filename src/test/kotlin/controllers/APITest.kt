@@ -4,7 +4,6 @@ import ie.setu.models.Author
 import ie.setu.models.Book
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Assertions.assertThrows
 import java.time.LocalDate
 
 class APITest {
@@ -22,7 +21,7 @@ class APITest {
             name = "J.K. Rowling",
             country = "UK",
             dateOfBirth = LocalDate.of(1965, 7, 31),
-            genres = listOf("Fantasy", "Drama"),
+            genres = listOf("Fantasy", "Drama").toMutableList(),
             booksWritten = ArrayList()
         )
         author2 = Author(
@@ -30,7 +29,7 @@ class APITest {
             name = "George R.R. Martin",
             country = "USA",
             dateOfBirth = LocalDate.of(1948, 9, 20),
-            genres = listOf("Fantasy", "Drama"),
+            genres = listOf("Fantasy", "Drama").toMutableList(),
             booksWritten = ArrayList()
         )
 
@@ -80,7 +79,7 @@ class APITest {
                 name = "J.R.R. Tolkien",
                 country = "UK",
                 dateOfBirth = LocalDate.of(1892, 1, 3),
-                genres = listOf("Fantasy"),
+                genres = listOf("Fantasy").toMutableList(),
                 booksWritten = ArrayList()
             )
             assertEquals(2, api!!.listAllAuthors().lines().count())
@@ -148,7 +147,7 @@ class APITest {
         @Test
         fun `searchExistingAuthor throws exception when author does not exist`() {
             assertThrows<NoSuchElementException> {
-                api!!.searchExistingAuthor(999)  // 999 is an ID that does not exist
+                api!!.searchExistingAuthor(999)
             }
         }
 
@@ -167,13 +166,150 @@ class APITest {
 
         @Test
         fun `validAuthorId returns true for existing author ID`() {
-            assertTrue(api!!.validAuthorId(1))
-            assertTrue(api!!.validAuthorId(2))
+            assertNotNull(api!!.validAuthorId(1))
+            assertNotNull(api!!.validAuthorId(2))
         }
 
         @Test
         fun `validAuthorId returns false for non-existing author ID`() {
-            assertFalse(api!!.validAuthorId(999))
+            assertNull(api!!.validAuthorId(999))
         }
+    }
+  @Nested
+  inner class DeleteEntities {
+      @Test
+      fun testDeleteBook() {
+          api!!.deleteBook(1)
+          val authorBooks = author1!!.booksWritten
+          assertFalse(authorBooks.any { it.bookId == 1 })
+          val booksList = api!!.listAllBooks()
+          assertFalse(booksList.contains("Harry Potter and the Philosopher's Stone"))
+      }
+      @Test
+      fun testDeleteAuthor() {
+          api!!.deleteAuthor(2)
+          val authorsList = api!!.listAllAuthors()
+          assertFalse(authorsList.contains("George R.R. Martin"))
+          val remainingBooks = api!!.listAllBooks()
+          assertFalse(remainingBooks.contains("A Game of Thrones"))
+      }
+  }
+    @Nested
+    inner class UpdateEntities {
+        @Test
+        fun testUpdateBook() {
+            val updatedPrice = 25.99f
+            val updatedGenre = "Adventure"
+            val updatedPublicationYear = 2000
+            val updatedIsbn = 111222333
+
+            val bookToUpdate = api!!.validBookId(1)
+            assertNotNull(bookToUpdate)
+
+            bookToUpdate!!.price = updatedPrice
+            bookToUpdate.genre = updatedGenre
+            bookToUpdate.publicationYear = updatedPublicationYear
+            bookToUpdate.isbn = updatedIsbn
+
+            val updatedBook = api!!.validBookId(1)
+            assertEquals(updatedPrice, updatedBook!!.price)
+            assertEquals(updatedGenre, updatedBook.genre)
+            assertEquals(updatedPublicationYear, updatedBook.publicationYear)
+            assertEquals(updatedIsbn, updatedBook.isbn)
+        }
+        @Test
+        fun testUpdateAuthor() {
+            val updatedCountry = "Canada"
+            val newGenre = "Mystery"
+
+            val authorToUpdate = api!!.validAuthorId(1)
+            assertNotNull(authorToUpdate)
+
+            authorToUpdate!!.country = updatedCountry
+            authorToUpdate.genres.add(newGenre)
+
+            val updatedAuthor = api!!.validAuthorId(1)
+            assertEquals(updatedCountry, updatedAuthor!!.country)
+            assertTrue(updatedAuthor.genres.contains(newGenre))
+        }
+
+    }
+    @Nested
+    inner class BookListingEntities () {
+        @Test
+        fun `searchBookByTitle should return book details if a book with the title exists`() {
+            val result = api!!.searchBookByTitle("Harry Potter")
+            assertTrue(result.contains("Harry Potter and the Philosopher's Stone"))
+        }
+
+        @Test
+        fun `searchBookByTitle should return a message if no book with the title exists`() {
+            val result = api!!.searchBookByTitle("Nonexistent Title")
+            assertEquals("No book found with this title.", result)
+        }
+        @Test
+        fun `searchBooksByGenre should return books in the specified genre`() {
+            val result = api!!.searchBooksByGenre("Fantasy")
+            assertTrue(result.contains("Harry Potter and the Philosopher's Stone"))
+            assertTrue(result.contains("A Game of Thrones"))
+        }
+
+        @Test
+        fun `searchBooksByGenre should return a message if no books exist in the specified genre`() {
+            val result = api!!.searchBooksByGenre("Science Fiction")
+            assertEquals("No books found with this genre.", result)
+        }
+        @Test
+        fun `listBooksByPrice should return books within the specified price range`() {
+            val result = api!!.listBooksByPrice(10.0, 25.0)
+            assertTrue(result.contains("Harry Potter and the Philosopher's Stone"))
+            assertTrue(result.contains("A Game of Thrones"))
+        }
+
+        @Test
+        fun `listBooksByPrice should return a message if no books exist within the specified price range`() {
+            val result = api!!.listBooksByPrice(30.0, 40.0)
+            assertEquals("No books found within the specified price range.", result)
+        }
+
+    }
+    @Nested
+    inner class AuthorListingEntities () {
+        @Test
+        fun `searchAuthorByName should return author details if an author with the name exists`() {
+            val result = api!!.searchAuthorByName("J.K. Rowling")
+            assertTrue(result.contains("J.K. Rowling"))
+        }
+
+        @Test
+        fun `searchAuthorByName should return a message if no author with the name exists`() {
+            val result = api!!.searchAuthorByName("Unknown Author")
+            assertEquals("No book found with this title.", result)
+        }
+        @Test
+        fun `searchAuthorsByGenre should return authors who have written books in the specified genre`() {
+            val result = api!!.searchAuthorsByGenre("Fantasy")
+            assertTrue(result.contains("J.K. Rowling"))
+            assertTrue(result.contains("George R.R. Martin"))
+        }
+
+        @Test
+        fun `searchAuthorsByGenre should return a message if no authors have written in the specified genre`() {
+            val result = api!!.searchAuthorsByGenre("Science Fiction")
+            assertEquals("No authors found with this genre.", result)
+        }
+        @Test
+        fun `listAuthorsByMaxMinBooks should return authors with a book count within the specified range`() {
+            author1!!.booksWritten.add(book1!!)
+            val result = api!!.listAuthorsByMaxMinBooks(1, 5)
+            assertTrue(result.contains("J.K. Rowling"))
+        }
+
+        @Test
+        fun `listAuthorsByMaxMinBooks should return a message if no authors have a book count within the specified range`() {
+            val result = api!!.listAuthorsByMaxMinBooks(10, 20)
+            assertEquals("No authors found with a specified book count range", result)
+        }
+
     }
 }
