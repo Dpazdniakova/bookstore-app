@@ -64,7 +64,7 @@ class API {
         val authorIndex = authors.indexOfFirst {it.authorId ==id}
         if (authorIndex != -1) {
             val authorToRemove =authors[authorIndex]
-            authorToRemove.booksWritten.reversed().forEach { book ->
+            authorToRemove.booksWritten.forEach { book ->
                 books.removeIf { it.title == book.title }
             }
             authors.removeAt(authorIndex)
@@ -74,7 +74,7 @@ class API {
     }
     fun searchBookByTitle(title: String): String {
         val books = bookList(
-            books.filter { note -> note.title.contains(title, ignoreCase = true) })
+            books.filter { book -> book.title.contains(title, ignoreCase = true) })
 
         return if (books.isEmpty()) {
             "No book found with this title."
@@ -84,7 +84,7 @@ class API {
     }
     fun searchAuthorByName(name: String): String {
         val authors = authorList(
-            authors.filter { note -> note.name.contains(name, ignoreCase = true) })
+            authors.filter { author -> author.name.contains(name, ignoreCase = true) })
 
         return if (authors.isEmpty()) {
             "No book found with this title."
@@ -92,7 +92,49 @@ class API {
             authors
         }
     }
+    fun searchAuthorsByGenre(genre: String): String {
+        val authorsWithGenre = authors.filter { author ->
+            author.genres.any { it.equals (genre , ignoreCase =true)}
+        }
 
+        return if (authorsWithGenre.isEmpty()) {
+            "No authors found with this genre."
+        } else {
+            authorList(authorsWithGenre)
+        }
+    }
+    fun searchBooksByGenre(genre: String): String {
+        val booksWithGenre = books.filter { book ->
+            book.genre.equals(genre,ignoreCase = true)
+        }
+
+        return if (booksWithGenre.isEmpty()) {
+            "No books found with this genre."
+        } else {
+            bookList(booksWithGenre)
+        }
+    }
+    fun listBooksByPrice(minPrice: Double, maxPrice: Double): String {
+        val booksInRange = books.filter { book ->
+            book.price > minPrice && book.price < maxPrice
+        }
+
+        return if (booksInRange.isEmpty()) {
+            "No books found within the specified price range."
+        } else {
+           bookList(booksInRange)
+        }
+    }
+    fun listAuthorsByMaxMinBooks (min: Int, max: Int) : String {
+        val suitableAuthors = authors.filter {author -> author.booksWritten.size in min .. max
+        }
+       return if (suitableAuthors.isEmpty()) {
+           "No authors found with a specified book count range"
+       }
+       else {
+           authorList(suitableAuthors)
+       }
+    }
     fun bookList(list: List<Book>): String =
         list.joinToString(separator = "\n") { book -> book.toString() }
 
@@ -100,3 +142,5 @@ class API {
         list.joinToString(separator = "\n") { author -> author.toString() }
 
 }
+
+

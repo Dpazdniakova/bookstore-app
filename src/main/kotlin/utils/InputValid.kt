@@ -36,6 +36,21 @@ fun readNextFloat(prompt: String?): Float {
         }
     } while (true)
 }
+fun readNextDouble(prompt: String?): Double {
+    do {
+        try {
+            print(prompt)
+            val input = readln().trim()
+            if (input.isBlank()) {
+                System.err.println("Input cannot be blank. Please enter a number.")
+                continue
+            }
+            return input.toDouble()
+        } catch (e: NumberFormatException) {
+            System.err.println("Enter a number please.")
+        }
+    } while (true)
+}
 
 fun readNextLine(prompt: String?): String {
     do {
