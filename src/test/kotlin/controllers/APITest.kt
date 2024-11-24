@@ -234,4 +234,82 @@ class APITest {
         }
 
     }
+    @Nested
+    inner class BookListingEntities () {
+        @Test
+        fun `searchBookByTitle should return book details if a book with the title exists`() {
+            val result = api!!.searchBookByTitle("Harry Potter")
+            assertTrue(result.contains("Harry Potter and the Philosopher's Stone"))
+        }
+
+        @Test
+        fun `searchBookByTitle should return a message if no book with the title exists`() {
+            val result = api!!.searchBookByTitle("Nonexistent Title")
+            assertEquals("No book found with this title.", result)
+        }
+        @Test
+        fun `searchBooksByGenre should return books in the specified genre`() {
+            val result = api!!.searchBooksByGenre("Fantasy")
+            assertTrue(result.contains("Harry Potter and the Philosopher's Stone"))
+            assertTrue(result.contains("A Game of Thrones"))
+        }
+
+        @Test
+        fun `searchBooksByGenre should return a message if no books exist in the specified genre`() {
+            val result = api!!.searchBooksByGenre("Science Fiction")
+            assertEquals("No books found with this genre.", result)
+        }
+        @Test
+        fun `listBooksByPrice should return books within the specified price range`() {
+            val result = api!!.listBooksByPrice(10.0, 25.0)
+            assertTrue(result.contains("Harry Potter and the Philosopher's Stone"))
+            assertTrue(result.contains("A Game of Thrones"))
+        }
+
+        @Test
+        fun `listBooksByPrice should return a message if no books exist within the specified price range`() {
+            val result = api!!.listBooksByPrice(30.0, 40.0)
+            assertEquals("No books found within the specified price range.", result)
+        }
+
+    }
+    @Nested
+    inner class AuthorListingEntities () {
+        @Test
+        fun `searchAuthorByName should return author details if an author with the name exists`() {
+            val result = api!!.searchAuthorByName("J.K. Rowling")
+            assertTrue(result.contains("J.K. Rowling"))
+        }
+
+        @Test
+        fun `searchAuthorByName should return a message if no author with the name exists`() {
+            val result = api!!.searchAuthorByName("Unknown Author")
+            assertEquals("No book found with this title.", result)
+        }
+        @Test
+        fun `searchAuthorsByGenre should return authors who have written books in the specified genre`() {
+            val result = api!!.searchAuthorsByGenre("Fantasy")
+            assertTrue(result.contains("J.K. Rowling"))
+            assertTrue(result.contains("George R.R. Martin"))
+        }
+
+        @Test
+        fun `searchAuthorsByGenre should return a message if no authors have written in the specified genre`() {
+            val result = api!!.searchAuthorsByGenre("Science Fiction")
+            assertEquals("No authors found with this genre.", result)
+        }
+        @Test
+        fun `listAuthorsByMaxMinBooks should return authors with a book count within the specified range`() {
+            author1!!.booksWritten.add(book1!!)
+            val result = api!!.listAuthorsByMaxMinBooks(1, 5)
+            assertTrue(result.contains("J.K. Rowling"))
+        }
+
+        @Test
+        fun `listAuthorsByMaxMinBooks should return a message if no authors have a book count within the specified range`() {
+            val result = api!!.listAuthorsByMaxMinBooks(10, 20)
+            assertEquals("No authors found with a specified book count range", result)
+        }
+
+    }
 }
