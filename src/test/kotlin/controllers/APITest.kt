@@ -5,6 +5,8 @@ import ie.setu.models.Book
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import java.time.LocalDate
+import persistence.JSONSerializer
+import java.io.File
 
 class APITest {
 
@@ -53,7 +55,10 @@ class APITest {
             isbn = 987654321
         )
 
-        api = API()
+        api = API(
+            JSONSerializer(File("authors.json")),
+            JSONSerializer(File("books.json"))
+        )
         api!!.addAuthor(author1!!)
         api!!.addAuthor(author2!!)
         api!!.addBook(book1!!)
@@ -62,6 +67,8 @@ class APITest {
 
     @AfterEach
     fun tearDown() {
+        File("authors.json").delete()
+        File("books.json").delete()
         author1 = null
         author2 = null
         book1 = null
@@ -123,13 +130,17 @@ class APITest {
 
         @Test
         fun `listAllAuthors returns No authors yet when no authors are added`() {
-            val emptyApi = API()
+            val emptyApi = API(
+                JSONSerializer(File("authors.json")),
+                JSONSerializer(File("books.json"))
+            )
             assertTrue(emptyApi.listAllAuthors().lowercase().contains("no authors yet"))
         }
 
         @Test
         fun `listAllBooks returns No books yet when no books are added`() {
-            val emptyApi = API()
+            val emptyApi = API( JSONSerializer(File("authors.json")),
+                JSONSerializer(File("books.json")))
             assertTrue(emptyApi.listAllBooks().lowercase().contains("no books yet"))
         }
     }
@@ -153,7 +164,8 @@ class APITest {
 
         @Test
         fun `searchExistingAuthor throws exception when list is empty`() {
-            val emptyApi = API()  // Empty list of authors
+            val emptyApi = API( JSONSerializer(File("authors.json")),
+                JSONSerializer(File("books.json")))
             assertThrows<NoSuchElementException> {
                 emptyApi.searchExistingAuthor(999)
             }
@@ -312,4 +324,40 @@ class APITest {
         }
 
     }
+    @Nested
+    inner class persistenceTests() {
+    @Test
+    fun `saving and loading an empty collection in JSON doesn't crash app`() {
+        val emptyApi = API(
+            JSONSerializer(File("emptyAuthors.json")),
+            JSONSerializer(File("emptyBooks.json"))
+        )
+        emptyApi.store()
+        val loadedApi = API(
+            JSONSerializer(File("emptyAuthors.json")),
+            JSONSerializer(File("emptyBooks.json"))
+        )
+        loadedApi.load()
+        assertEquals(0, emptyApi.numberOfAuthors())
+        assertEquals(0, emptyApi.numberOfBooks())
+        assertEquals(emptyApi.numberOfAuthors(), loadedApi.numberOfAuthors())
+        assertEquals(emptyApi.numberOfBooks(), loadedApi.numberOfBooks())
+    }
+
+    @Test
+    fun `saving and loading a populated collection in JSON retains data`() {
+        api!!.store()
+        val loadedApi = API(
+            JSONSerializer(File("authors.json")),
+            JSONSerializer(File("books.json"))
+        )
+        loadedApi.load()
+
+        assertEquals(loadedApi.numberOfAuthors(), api!!.numberOfAuthors())
+        assertEquals(api!!.numberOfBooks(), loadedApi.numberOfBooks())
+
+        assertEquals(api!!.searchExistingAuthor(1), loadedApi.searchExistingAuthor(1))
+        assertEquals(api!!.findBookById(1), loadedApi.findBookById(1))
+    }
+}
 }

@@ -4,11 +4,16 @@ import controllers.API
 import ie.setu.models.Author
 import ie.setu.models.Book
 import ie.setu.utils.*
-import java.time.LocalDateTime
+import persistence.JSONSerializer
+import java.io.File
 
 var aId =0
 var bId=0
-private val API = API()
+val authorsSerializer = JSONSerializer(File("authors.json"))
+val booksSerializer = JSONSerializer(File("books.json"))
+val API = API(authorsSerializer, booksSerializer)
+
+
 fun main() {
     runMenu()
 }
@@ -26,10 +31,12 @@ fun mainMenu() : Int {
           |   6) List Authors              |
           |   7) Update an Author          |
           |   8) Delete an Author          |
+          |   9) Save data                 |
+          |   10) Load data                |
           |   0) Exit                      |
            --------------------------------
           """.trimMargin(">"))
-     return readNextInt("\nPlease select an option 0-4: ")
+     return readNextInt("\nPlease select an option 0-10: ")
 }
 
 fun runMenu() {
@@ -60,6 +67,12 @@ fun runMenu() {
             }
             8 -> {
                 deletingAuthor()
+            }
+            9 -> {
+                save()
+            }
+            10 -> {
+                load()
             }
             0  -> {exitApp()
                 println ("Exiting book creation")}
@@ -447,4 +460,18 @@ fun listingBooks () {
     } while (option != 5)
 }
 
+fun save() {
+    try {
+       API.store()
+    } catch (e: Exception) {
+        System.err.println("Error writing to file: $e")
+    }
+}
 
+fun load() {
+    try {
+        API.load()
+    } catch (e: Exception) {
+        System.err.println("Error reading from file: $e")
+    }
+}

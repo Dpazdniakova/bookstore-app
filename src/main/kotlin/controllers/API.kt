@@ -2,11 +2,29 @@ package controllers
 
 import ie.setu.models.Author
 import ie.setu.models.Book
+import persistence.JSONSerializer
+import persistence.Serializer
+import java.io.File
 import java.time.LocalDateTime
 
-class API {
+class API(private val authorsSerializer: Serializer, private val booksSerializer: Serializer) {
     private var authors = ArrayList<Author>()
     private var books = ArrayList<Book>()
+
+    @Throws(Exception::class)
+    fun load() {
+        // Load authors and books from their respective files
+        authors = authorsSerializer.read() as ArrayList<Author>
+        books = booksSerializer.read() as ArrayList<Book>
+    }
+
+    @Throws(Exception::class)
+    fun store() {
+        // Store authors and books in their respective files
+        authorsSerializer.write(authors)
+        booksSerializer.write(books)
+    }
+
 
     fun addAuthor(author: Author): Boolean {
         return authors.add(author)
@@ -141,6 +159,17 @@ class API {
     fun authorList(list: List<Author>): String =
         list.joinToString(separator = "\n") { author -> author.toString() }
 
+
+    fun numberOfBooks(): Int {
+        return books.size
+    }
+    fun numberOfAuthors(): Int {
+        return authors.size
+    }
+    fun findBookById(Id: Int): Book {
+        val book = books.first { it.bookId == Id }
+        return book
+    }
 }
 
 
