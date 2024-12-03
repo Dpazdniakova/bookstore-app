@@ -1,6 +1,8 @@
 plugins {
     kotlin("jvm") version "2.0.10"
     id("org.jetbrains.dokka") version "1.9.0"
+    id("org.jlleitschuh.gradle.ktlint") version "11.4.0"
+    application
     id("jacoco")
 }
 
@@ -9,7 +11,7 @@ jacoco {
 }
 
 group = "ie.setu"
-version = "1.0-SNAPSHOT"
+version = "1.0"
 
 repositories {
     mavenCentral()
@@ -24,6 +26,25 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "MainKt"
+    }
+}
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "MainKt"
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(sourceSets.main.get().output)
+    dependsOn(configurations.runtimeClasspath)
+    from({
+        configurations.runtimeClasspath.get()
+            .filter { it.name.endsWith("jar") }
+            .map { zipTree(it) }
+    })
+}
+
 kotlin {
     jvmToolchain(16)
 }

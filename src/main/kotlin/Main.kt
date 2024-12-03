@@ -1,25 +1,31 @@
 
-import java.lang.System.exit
 import controllers.API
 import ie.setu.models.Author
 import ie.setu.models.Book
-import ie.setu.utils.*
+import ie.setu.utils.containsNumbers
+import ie.setu.utils.readNextDate
+import ie.setu.utils.readNextDouble
+import ie.setu.utils.readNextFloat
+import ie.setu.utils.readNextInt
+import ie.setu.utils.readNextLine
+import ie.setu.utils.readValidYear
 import persistence.JSONSerializer
 import java.io.File
+import java.lang.System.exit
 
-var aId =0
-var bId=0
+var aId = 0
+var bId = 0
 val authorsSerializer = JSONSerializer(File("authors.json"))
 val booksSerializer = JSONSerializer(File("books.json"))
 val API = API(authorsSerializer, booksSerializer)
-
 
 fun main() {
     runMenu()
 }
 
-fun mainMenu() : Int {
-    print("""
+fun mainMenu(): Int {
+    print(
+        """
           ----------------------------------
           |        Book Store System       |
           ----------------------------------
@@ -35,32 +41,31 @@ fun mainMenu() : Int {
           |   10) Load data                |
           |   0) Exit                      |
            --------------------------------
-          """.trimMargin(">"))
-     return readNextInt("\nPlease select an option 0-10: ")
+          """.trimMargin(">")
+    )
+    return readNextInt("\nPlease select an option 0-10: ")
 }
 
 fun runMenu() {
     do {
-        val option= mainMenu()
-        when (option) {
+        when (val option = mainMenu()) {
             1 -> {
-               addBook()
+                addBook()
             }
             2 -> {
                 listingBooks()
-
             }
             3 -> {
-             updateBook()
+                updateBook()
             }
             4 -> {
-                deletingBook ()
+                deletingBook()
             }
             5 -> {
                 addAuthor()
             }
             6 -> {
-               listingAuthors()
+                listingAuthors()
             }
             7 -> {
                 updateAuthor()
@@ -74,18 +79,16 @@ fun runMenu() {
             10 -> {
                 load()
             }
-            0  -> {exitApp()
-                println ("Exiting book creation")}
+            0 -> {
+                exitApp()
+                println("Exiting book creation")
+            }
             else -> println("Invalid option entered: $option ")
-
         }
-
-
     } while (true)
-
 }
 
-fun exitApp(){
+fun exitApp() {
     println("Exiting")
     exit(0)
 }
@@ -94,15 +97,13 @@ fun getGenres(): MutableList<String> {
     var userWantsToContinue = true
 
     while (userWantsToContinue) {
-
         val genre = readNextLine("Enter a genre (type 'done' to finish): ")
 
-        if (genre.equals("done", ignoreCase = true))
+        if (genre.equals("done", ignoreCase = true)) {
             userWantsToContinue = false
-        else if (genre.isNotBlank() && !containsNumbers(genre)) {
+        } else if (genre.isNotBlank() && !containsNumbers(genre)) {
             genres.add(genre)
-        }
-        else {
+        } else {
             println("Genre can't be blank or contain numbers.Please, re-enter")
         }
     }
@@ -110,11 +111,10 @@ fun getGenres(): MutableList<String> {
     return genres
 }
 
-
-fun addAuthor () {
+fun addAuthor() {
     val authorId = aId
     aId++
-    var name : String
+    var name: String
 
     do {
         name = readNextLine("Enter Author's name:")
@@ -126,27 +126,25 @@ fun addAuthor () {
     var country: String
     do {
         country = readNextLine("Enter Author's country of origin: ")
-        if (containsNumbers(country) || name.isBlank() ) {
+        if (containsNumbers(country) || name.isBlank()) {
             println("Country can't contain numbers. Please, re-enter")
         }
-    } while (containsNumbers(country) || name.isBlank() )
+    } while (containsNumbers(country) || name.isBlank())
 
     val dateOfBirth = readNextDate()
-    val genres= getGenres()
-    val booksWritten= ArrayList<Book>()
+    val genres = getGenres()
+    val booksWritten = ArrayList<Book>()
 
     val isAdded = API.addAuthor(Author(authorId, name, country, dateOfBirth, genres, booksWritten))
 
-  if (isAdded) {
-      println("Successfully added ")
-
-   }
-    else {
+    if (isAdded) {
+        println("Successfully added ")
+    } else {
         println("Add failed")
     }
 }
 
-fun addBook () {
+fun addBook() {
     val bookId = bId
     bId++
     val title = readNextLine("Enter book title: ")
@@ -160,53 +158,50 @@ fun addBook () {
         println("2. Create new author")
         println("0. Exit")
 
-        val option= readNextInt("Please, enter your option: ")
+        val option = readNextInt("Please, enter your option: ")
         when (option) {
-            1  ->{ val result =addingBookWithExistingAuthor(genre)
-                if (result!=null) {
-                    authorForObject=result
+            1 -> {
+                val result = addingBookWithExistingAuthor(genre)
+                if (result != null) {
+                    authorForObject = result
                     val publicationYear = readValidYear("Please, enter publication year: ")
                     val price = readNextFloat("Please, enter price: ")
                     val isbn = readNextInt("Please, enter a 9-digit ISBN: ")
                     val newBook = Book(bookId, title, authorForObject, genre, publicationYear, price, isbn)
                     authorForObject.booksWritten.add(newBook)
                     API.addBook(newBook)
-                    println ("Book successfully added")
-
-                }
-                else  {
+                    println("Book successfully added")
+                } else {
                     println("No valid author was selected. Book creation is cancelled")
                 }
-                    done = true
+                done = true
             }
-            2  -> {addAuthor()
-            authorForObject=API.lastAddedAuthor()
+            2 -> {
+                addAuthor()
+                authorForObject = API.lastAddedAuthor()
                 val publicationYear = readValidYear("Please, enter publication year: ")
                 val price = readNextFloat("Please, enter price: ")
                 val isbn = readNextInt("Please, enter a 9-digit ISBN: ")
                 val newBook = Book(bookId, title, authorForObject, genre, publicationYear, price, isbn)
                 authorForObject.booksWritten.add(newBook)
                 API.addBook(newBook)
-                println ("Book successfully added")
-                done=true
+                println("Book successfully added")
+                done = true
             }
             0 -> runMenu()
             else -> println("Invalid option entered: $option ")
-
         }
-
     }
-        while (option!=0 && done==false)
+    while (option != 0 && !done)
+}
 
- }
-
-fun addingBookWithExistingAuthor (genre: String): Author? {
+fun addingBookWithExistingAuthor(genre: String): Author? {
     var result: Author? = null
     println(API.listAllAuthors())
     if (!API.listAllAuthors().contains("No authors")) {
-        val Id = readNextInt("Please, enter Author's Id: ")
-        if (API.validAuthorId(Id) != null) {
-            val author = API.searchExistingAuthor(Id)
+        val id = readNextInt("Please, enter Author's Id: ")
+        if (API.validAuthorId(id) != null) {
+            val author = API.searchExistingAuthor(id)
             if (author.genres.isNotEmpty()) {
                 if (author.genres.any { it.equals(genre, ignoreCase = true) }) {
                     println("Author found.")
@@ -216,7 +211,6 @@ fun addingBookWithExistingAuthor (genre: String): Author? {
                 }
             } else {
                 result = author
-
             }
         } else {
             println("Author ID not valid.")
@@ -225,27 +219,24 @@ fun addingBookWithExistingAuthor (genre: String): Author? {
     return result
 }
 
-fun deletingBook () {
+fun deletingBook() {
     println(API.listAllBooks())
-    val Id = readNextInt("Please, enter the ID of the book you want to delete: ")
-    val result=API.deleteBook(Id)
-    if ( !result)  {
+    val id = readNextInt("Please, enter the ID of the book you want to delete: ")
+    val result = API.deleteBook(id)
+    if (result) {
         println("Deletion successful.")
-    }
-    else {
+    } else {
         println("Deletion unsuccessful.")
     }
-
 }
 
 fun deletingAuthor() {
     println(API.listAllAuthors())
-    val Id = readNextInt("Please, enter the ID of the author you want to delete: ")
-    val result=API.deleteAuthor(Id)
-    if ( !result)  {
+    val id = readNextInt("Please, enter the ID of the author you want to delete: ")
+    val result = API.deleteAuthor(id)
+    if (result) {
         println("Deletion successful.")
-    }
-    else {
+    } else {
         println("Deletion unsuccessful.")
     }
 }
@@ -259,14 +250,16 @@ fun updateBook() {
         if (bookToUpdate != null) {
             var option: Int
             do {
-                println("""
+                println(
+                    """
                     What would you like to update?
                     1. Price
                     2. Genre
                     3. Publication Year
                     4. ISBN
                     5. Exit
-                """.trimIndent())
+                    """.trimIndent()
+                )
                 option = readNextInt("Enter your choice: ")
 
                 when (option) {
@@ -309,18 +302,20 @@ fun updateAuthor() {
         if (authorToUpdate != null) {
             var option: Int
             do {
-                println("""
+                println(
+                    """
                     What would you like to update?
                     1. Add New Genre
                     2. Change Country of Origin
                     3. Exit
-                """.trimIndent())
+                    """.trimIndent()
+                )
                 option = readNextInt("Enter your choice: ")
 
                 when (option) {
                     1 -> {
                         val newGenre = readNextLine("Enter new genre to add: ")
-                        if (newGenre.isNotBlank()&& !containsNumbers(newGenre)) {
+                        if (newGenre.isNotBlank() && !containsNumbers(newGenre)) {
                             authorToUpdate.genres.add(newGenre)
                             println("Genre added successfully.")
                         } else {
@@ -329,7 +324,7 @@ fun updateAuthor() {
                     }
                     2 -> {
                         val newCountry = readNextLine("Enter new country of origin: ")
-                        if (newCountry.isNotBlank()&& !containsNumbers(newCountry)) {
+                        if (newCountry.isNotBlank() && !containsNumbers(newCountry)) {
                             authorToUpdate.country = newCountry
                             println("Country of origin updated successfully.")
                         } else {
@@ -346,55 +341,53 @@ fun updateAuthor() {
     }
 }
 
-fun listingAuthors () {
+fun listingAuthors() {
     var option: Int
     do {
-        println("""
+        println(
+            """
                     Listing options
                     1. List all authors
                     2. List authors by genre
                     3. List authors by number of books written
                     4. List author by name
                     5. Exit
-                """.trimIndent())
+            """.trimIndent()
+        )
         option = readNextInt("Enter your choice: ")
 
         when (option) {
             1 -> {
-            println(API.listAllAuthors())
+                println(API.listAllAuthors())
             }
             2 -> {
-                if (!API.listAllAuthors().contains("No authors"))
-                {
+                if (!API.listAllAuthors().contains("No authors")) {
                     val genre = readNextLine("Please, enter a genre: ")
-                   if (genre.isNotBlank() && !containsNumbers(genre)) {
-                       println(API.searchAuthorsByGenre(genre))
+                    if (genre.isNotBlank() && !containsNumbers(genre)) {
+                        println(API.searchAuthorsByGenre(genre))
+                    } else {
+                        println("Genre can't be blank or contain numbers.Please, re-enter")
+                    }
+                } else {
+                    (println("No authors yet."))
                 }
-                else {
-                    println("Genre can't be blank or contain numbers.Please, re-enter")
-                }
-                }
-                    else (println ("No authors yet."))
             }
             3 -> {
-                if (!API.listAllAuthors().contains("No authors"))
-                {
+                if (!API.listAllAuthors().contains("No authors")) {
                     val min = readNextInt("Please, enter a minimum number of books for an author: ")
                     val max = readNextInt("Now, enter a maximum number of books for an author: ")
-                    println(API.listAuthorsByMaxMinBooks(min,max))
-
+                    println(API.listAuthorsByMaxMinBooks(min, max))
+                } else {
+                    (println("No authors yet."))
                 }
-                else (println ("No authors yet."))
             }
             4 -> {
-                if (!API.listAllAuthors().contains("No authors"))
-                {
+                if (!API.listAllAuthors().contains("No authors")) {
                     val name = readNextLine("Please, enter the author's name: ")
                     println(API.searchAuthorByName(name))
-
+                } else {
+                    (println("No authors yet."))
                 }
-                else (println ("No authors yet."))
-
             }
             5 -> println("Exiting menu.")
             else -> println("Invalid option. Please try again.")
@@ -402,57 +395,53 @@ fun listingAuthors () {
     } while (option != 5)
 }
 
-fun listingBooks () {
+fun listingBooks() {
     var option: Int
     do {
-        println("""
+        println(
+            """
                     Listing options
                     1. List all books
                     2. List books by title
                     3. List books by price
                     4. List books by genre
                     5. Exit
-                """.trimIndent())
+            """.trimIndent()
+        )
         option = readNextInt("Enter your choice: ")
 
         when (option) {
             1 -> {
-               println(API.listAllBooks())
+                println(API.listAllBooks())
             }
             2 -> {
-            if (!API.listAllBooks().contains("No books")) {
-                val title = readNextLine("Please, enter book's title: ")
-               println( API.searchBookByTitle(title))
-            }
-                else {
-                   println("No books yet.")
+                if (!API.listAllBooks().contains("No books")) {
+                    val title = readNextLine("Please, enter book's title: ")
+                    println(API.searchBookByTitle(title))
+                } else {
+                    println("No books yet.")
                 }
             }
             3 -> {
                 if (!API.listAllBooks().contains("No books")) {
                     val min = readNextDouble("Please, enter a minimum price: ")
                     val max = readNextDouble("Now, enter a maximum price: ")
-                    println(API.listBooksByPrice(min,max))
-                }
-                else {
+                    println(API.listBooksByPrice(min, max))
+                } else {
                     println("No books yet.")
                 }
             }
             4 -> {
-
                 if (!API.listAllBooks().contains("No books")) {
                     val genre = readNextLine("Please, enter a genre: ")
                     if (genre.isNotBlank() && !containsNumbers(genre)) {
-                      println( API.searchBooksByGenre(genre))
-                    }
-                    else {
+                        println(API.searchBooksByGenre(genre))
+                    } else {
                         println("Genre can't be blank or contain numbers.Please, re-enter")
                     }
-                }
-                else {
+                } else {
                     println("No books yet.")
                 }
-
             }
             5 -> println("Exiting menu.")
             else -> println("Invalid option. Please try again.")
@@ -462,7 +451,7 @@ fun listingBooks () {
 
 fun save() {
     try {
-       API.store()
+        API.store()
     } catch (e: Exception) {
         System.err.println("Error writing to file: $e")
     }

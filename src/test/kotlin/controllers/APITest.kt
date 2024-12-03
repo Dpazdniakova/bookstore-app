@@ -1,13 +1,19 @@
 package controllers
-
+import java.io.File
+import java.time.LocalDate
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import ie.setu.models.Author
 import ie.setu.models.Book
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
-import java.time.LocalDate
 import persistence.JSONSerializer
-import java.io.File
-
 class APITest {
 
     private var author1: Author? = null
@@ -139,8 +145,10 @@ class APITest {
 
         @Test
         fun `listAllBooks returns No books yet when no books are added`() {
-            val emptyApi = API( JSONSerializer(File("authors.json")),
-                JSONSerializer(File("books.json")))
+            val emptyApi = API(
+                JSONSerializer(File("authors.json")),
+                JSONSerializer(File("books.json"))
+            )
             assertTrue(emptyApi.listAllBooks().lowercase().contains("no books yet"))
         }
     }
@@ -164,12 +172,15 @@ class APITest {
 
         @Test
         fun `searchExistingAuthor throws exception when list is empty`() {
-            val emptyApi = API( JSONSerializer(File("authors.json")),
-                JSONSerializer(File("books.json")))
+            val emptyApi = API(
+                JSONSerializer(File("authors.json")),
+                JSONSerializer(File("books.json"))
+            )
             assertThrows<NoSuchElementException> {
                 emptyApi.searchExistingAuthor(999)
             }
         }
+
         @Test
         fun `lastAddedAuthor returns the last added author`() {
             val lastAuthor = api!!.lastAddedAuthor()
@@ -187,25 +198,30 @@ class APITest {
             assertNull(api!!.validAuthorId(999))
         }
     }
-  @Nested
-  inner class DeleteEntities {
-      @Test
-      fun testDeleteBook() {
-          api!!.deleteBook(1)
-          val authorBooks = author1!!.booksWritten
-          assertFalse(authorBooks.any { it.bookId == 1 })
-          val booksList = api!!.listAllBooks()
-          assertFalse(booksList.contains("Harry Potter and the Philosopher's Stone"))
-      }
-      @Test
-      fun testDeleteAuthor() {
-          api!!.deleteAuthor(2)
-          val authorsList = api!!.listAllAuthors()
-          assertFalse(authorsList.contains("George R.R. Martin"))
-          val remainingBooks = api!!.listAllBooks()
-          assertFalse(remainingBooks.contains("A Game of Thrones"))
-      }
-  }
+
+    @Nested
+    inner class DeleteEntities {
+        @Test
+        fun testDeleteBook() {
+            api!!.deleteBook(1)
+            val authorBooks = author1!!.booksWritten
+            assertFalse(authorBooks.any { it.bookId == 1 })
+            val booksList = api!!.listAllBooks()
+            assertFalse(booksList.contains("Harry Potter and the Philosopher's Stone"))
+        }
+
+        @Test
+        fun testDeleteAuthor() {
+            api!!.deleteAuthor(1)
+            val authorsList = api!!.listAllAuthors()
+            println("Remaining authors after deletion: $authorsList")
+            assertFalse(authorsList.contains("J.K. Rowling"))
+            val remainingBooks = api!!.listAllBooks()
+            println("Remaining books after deletion: $remainingBooks")
+            assertFalse(remainingBooks.contains("Harry Potter and the Philosopher's Stone"))
+        }
+    }
+
     @Nested
     inner class UpdateEntities {
         @Test
@@ -229,6 +245,7 @@ class APITest {
             assertEquals(updatedPublicationYear, updatedBook.publicationYear)
             assertEquals(updatedIsbn, updatedBook.isbn)
         }
+
         @Test
         fun testUpdateAuthor() {
             val updatedCountry = "Canada"
@@ -244,10 +261,10 @@ class APITest {
             assertEquals(updatedCountry, updatedAuthor!!.country)
             assertTrue(updatedAuthor.genres.contains(newGenre))
         }
-
     }
+
     @Nested
-    inner class BookListingEntities () {
+    inner class BookListingEntities() {
         @Test
         fun `searchBookByTitle should return book details if a book with the title exists`() {
             val result = api!!.searchBookByTitle("Harry Potter")
@@ -259,6 +276,7 @@ class APITest {
             val result = api!!.searchBookByTitle("Nonexistent Title")
             assertEquals("No book found with this title.", result)
         }
+
         @Test
         fun `searchBooksByGenre should return books in the specified genre`() {
             val result = api!!.searchBooksByGenre("Fantasy")
@@ -271,6 +289,7 @@ class APITest {
             val result = api!!.searchBooksByGenre("Science Fiction")
             assertEquals("No books found with this genre.", result)
         }
+
         @Test
         fun `listBooksByPrice should return books within the specified price range`() {
             val result = api!!.listBooksByPrice(10.0, 25.0)
@@ -283,10 +302,10 @@ class APITest {
             val result = api!!.listBooksByPrice(30.0, 40.0)
             assertEquals("No books found within the specified price range.", result)
         }
-
     }
+
     @Nested
-    inner class AuthorListingEntities () {
+    inner class AuthorListingEntities() {
         @Test
         fun `searchAuthorByName should return author details if an author with the name exists`() {
             val result = api!!.searchAuthorByName("J.K. Rowling")
@@ -298,6 +317,7 @@ class APITest {
             val result = api!!.searchAuthorByName("Unknown Author")
             assertEquals("No book found with this title.", result)
         }
+
         @Test
         fun `searchAuthorsByGenre should return authors who have written books in the specified genre`() {
             val result = api!!.searchAuthorsByGenre("Fantasy")
@@ -310,6 +330,7 @@ class APITest {
             val result = api!!.searchAuthorsByGenre("Science Fiction")
             assertEquals("No authors found with this genre.", result)
         }
+
         @Test
         fun `listAuthorsByMaxMinBooks should return authors with a book count within the specified range`() {
             author1!!.booksWritten.add(book1!!)
@@ -322,42 +343,42 @@ class APITest {
             val result = api!!.listAuthorsByMaxMinBooks(10, 20)
             assertEquals("No authors found with a specified book count range", result)
         }
-
     }
+
     @Nested
-    inner class persistenceTests() {
-    @Test
-    fun `saving and loading an empty collection in JSON doesn't crash app`() {
-        val emptyApi = API(
-            JSONSerializer(File("emptyAuthors.json")),
-            JSONSerializer(File("emptyBooks.json"))
-        )
-        emptyApi.store()
-        val loadedApi = API(
-            JSONSerializer(File("emptyAuthors.json")),
-            JSONSerializer(File("emptyBooks.json"))
-        )
-        loadedApi.load()
-        assertEquals(0, emptyApi.numberOfAuthors())
-        assertEquals(0, emptyApi.numberOfBooks())
-        assertEquals(emptyApi.numberOfAuthors(), loadedApi.numberOfAuthors())
-        assertEquals(emptyApi.numberOfBooks(), loadedApi.numberOfBooks())
+    inner class PersistenceTests() {
+        @Test
+        fun `saving and loading an empty collection in JSON doesn't crash app`() {
+            val emptyApi = API(
+                JSONSerializer(File("emptyAuthors.json")),
+                JSONSerializer(File("emptyBooks.json"))
+            )
+            emptyApi.store()
+            val loadedApi = API(
+                JSONSerializer(File("emptyAuthors.json")),
+                JSONSerializer(File("emptyBooks.json"))
+            )
+            loadedApi.load()
+            assertEquals(0, emptyApi.numberOfAuthors())
+            assertEquals(0, emptyApi.numberOfBooks())
+            assertEquals(emptyApi.numberOfAuthors(), loadedApi.numberOfAuthors())
+            assertEquals(emptyApi.numberOfBooks(), loadedApi.numberOfBooks())
+        }
+
+        @Test
+        fun `saving and loading a populated collection in JSON retains data`() {
+            api!!.store()
+            val loadedApi = API(
+                JSONSerializer(File("authors.json")),
+                JSONSerializer(File("books.json"))
+            )
+            loadedApi.load()
+
+            assertEquals(loadedApi.numberOfAuthors(), api!!.numberOfAuthors())
+            assertEquals(api!!.numberOfBooks(), loadedApi.numberOfBooks())
+
+            assertEquals(api!!.searchExistingAuthor(1), loadedApi.searchExistingAuthor(1))
+            assertEquals(api!!.findBookById(1), loadedApi.findBookById(1))
+        }
     }
-
-    @Test
-    fun `saving and loading a populated collection in JSON retains data`() {
-        api!!.store()
-        val loadedApi = API(
-            JSONSerializer(File("authors.json")),
-            JSONSerializer(File("books.json"))
-        )
-        loadedApi.load()
-
-        assertEquals(loadedApi.numberOfAuthors(), api!!.numberOfAuthors())
-        assertEquals(api!!.numberOfBooks(), loadedApi.numberOfBooks())
-
-        assertEquals(api!!.searchExistingAuthor(1), loadedApi.searchExistingAuthor(1))
-        assertEquals(api!!.findBookById(1), loadedApi.findBookById(1))
-    }
-}
 }
