@@ -62,7 +62,7 @@ fun readNextLine(prompt: String?): String {
         }
     } while (true)
 }
-fun readNextDate(): LocalDate? {
+fun readNextDate(): LocalDate {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     while (true) {
         println("Please enter a date (yyyy-MM-dd):")
