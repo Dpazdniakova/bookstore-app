@@ -1,6 +1,5 @@
 .gradle
 build/
-!build/bookstore-app-1.0.jar
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
