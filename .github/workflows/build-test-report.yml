@@ -21,9 +21,6 @@ jobs:
       
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-      # Runs the Gradle build task
-      - name: Run the Gradle Build
-        run: ./gradlew build
 
               # Runs the Gradle build task, but without running the JUnit tests
       - name: Run the Gradle Build
