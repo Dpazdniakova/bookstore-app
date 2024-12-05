@@ -19,10 +19,16 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
       
+      - name: Set up java 16
+        uses: actions/setup-java@v4
+        with:
+          java-version : '16'
+          distribution: 'adopt'
+          
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-
-              # Runs the Gradle build task, but without running the JUnit tests
+    
+      # Runs the Gradle build task, but without running the JUnit tests
       - name: Run the Gradle Build
         run: ./gradlew build -x test
         
