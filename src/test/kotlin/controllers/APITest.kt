@@ -44,7 +44,7 @@ class APITest {
         book1 = Book(
             bookId = 1,
             title = "Harry Potter and the Philosopher's Stone",
-            author = author1,
+            author = author1!!,
             genre = "Fantasy",
             publicationYear = 1997,
             price = 20.99f,
@@ -54,12 +54,13 @@ class APITest {
         book2 = Book(
             bookId = 2,
             title = "A Game of Thrones",
-            author = author2,
+            author = author2!!,
             genre = "Fantasy",
             publicationYear = 1996,
             price = 15.99f,
             isbn = 987654321
         )
+
 
         api = API(
             JSONSerializer(File("authors.json")),
@@ -69,6 +70,9 @@ class APITest {
         api!!.addAuthor(author2!!)
         api!!.addBook(book1!!)
         api!!.addBook(book2!!)
+        author1!!.booksWritten.add(book1!!)
+        author2!!.booksWritten.add(book2!!)
+
     }
 
     @AfterEach
@@ -105,7 +109,7 @@ class APITest {
             val newBook = Book(
                 bookId = 3,
                 title = "The Hobbit",
-                author = author1,
+                author = author1!!,
                 genre = "Fantasy",
                 publicationYear = 1937,
                 price = 18.99f,
