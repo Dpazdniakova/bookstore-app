@@ -30,13 +30,13 @@ If you need help with understanding features navigate to the [Wiki](https://gith
 Daryana Pazdniakova
 
 ### Other reposetories by myself 
-[Console Notes App](https://github.com/Dpazdniakova/notes-app)
-[Console Employee App](https://github.com/Dpazdniakova/employee-app)
-[Website ToDo App](https://github.com/Dpazdniakova/To_Do_App)
+- [Console Notes App](https://github.com/Dpazdniakova/notes-app)
+- [Console Employee App](https://github.com/Dpazdniakova/employee-app)
+- [Website ToDo App](https://github.com/Dpazdniakova/To_Do_App)
 
-###Tech Stack 
--Kotlin
--Java
--JavaScript
--Python 
--Pandas
+### Tech Stack 
+- Kotlin
+- Java
+- JavaScript
+- Python 
+- Pandas
