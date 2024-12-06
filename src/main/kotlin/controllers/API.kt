@@ -20,6 +20,7 @@ class API(private val authorsSerializer: Serializer, private val booksSerializer
      *
      * @throws Exception if there is an issue reading data.
      */
+    @Suppress("UNCHECKED_CAST")
     @Throws(Exception::class)
     fun load() {
         authors = authorsSerializer.read() as ArrayList<Author>

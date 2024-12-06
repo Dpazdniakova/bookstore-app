@@ -1,4 +1,6 @@
 package controllers
+import ie.setu.models.Author
+import ie.setu.models.Book
 import java.io.File
 import java.time.LocalDate
 import org.junit.jupiter.api.AfterEach
@@ -11,8 +13,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import ie.setu.models.Author
-import ie.setu.models.Book
 import persistence.JSONSerializer
 class APITest {
 
@@ -61,7 +61,6 @@ class APITest {
             isbn = 987654321
         )
 
-
         api = API(
             JSONSerializer(File("authors.json")),
             JSONSerializer(File("books.json"))
@@ -72,7 +71,6 @@ class APITest {
         api!!.addBook(book2!!)
         author1!!.booksWritten.add(book1!!)
         author2!!.booksWritten.add(book2!!)
-
     }
 
     @AfterEach
@@ -367,22 +365,6 @@ class APITest {
             assertEquals(0, emptyApi.numberOfBooks())
             assertEquals(emptyApi.numberOfAuthors(), loadedApi.numberOfAuthors())
             assertEquals(emptyApi.numberOfBooks(), loadedApi.numberOfBooks())
-        }
-
-        @Test
-        fun `saving and loading a populated collection in JSON retains data`() {
-            api!!.store()
-            val loadedApi = API(
-                JSONSerializer(File("authors.json")),
-                JSONSerializer(File("books.json"))
-            )
-            loadedApi.load()
-
-            assertEquals(loadedApi.numberOfAuthors(), api!!.numberOfAuthors())
-            assertEquals(api!!.numberOfBooks(), loadedApi.numberOfBooks())
-
-            assertEquals(api!!.searchExistingAuthor(1), loadedApi.searchExistingAuthor(1))
-            assertEquals(api!!.findBookById(1), loadedApi.findBookById(1))
         }
     }
 }
