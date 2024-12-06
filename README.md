@@ -17,7 +17,7 @@ This is V1.0
 - Robust input validation for user-friendly interaction.
 
 ## Running the application
-Navigate to build/libs folder in GitHub and download the executable jar. Then run it in your terminal with this command :
+Run the executable jar in your terminal with this command :
 ``` bash
 java -jar "C:\Folder\bookstore-app-version.jar"
 ```
