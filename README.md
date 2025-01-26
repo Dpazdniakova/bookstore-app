@@ -1,7 +1,7 @@
 # Book Store System 
 ---
 
-A Kotlin-based application to manage authors and books with a JSON-based persistence layer. This system provides a simple CLI for adding, updating, deleting, and listing authors and books, along with powerful filtering and search options.
+A Kotlin-based application to manage authors and books with a JSON-based persistence layer I built for my software development tools class. This system provides a simple CLI for adding, updating, deleting, and listing authors and books, along with powerful filtering and search options.
 
 ## Project's purpose 
 
